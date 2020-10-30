@@ -14,15 +14,14 @@ namespace Silent.Tool.Hexagonal.Cli
                 .AddJsonFile("appsettings.json", true, true)
                 .Build();
 
-            var services = new ServiceCollection();
-            services.AddOptions();
-            services.Configure<GeneralOptions>(config.GetSection(GeneralOptions.Name));
+            var services = new ServiceCollection()
+                .AddOptions()
+                .Configure<GeneralOptions>(config.GetSection(GeneralOptions.Name))
+                .AddTransient<InitializeCommand>()
+                .AddTransient<AddServiceCommand>()
+                .AddTransient<AddWebAppCommand>();
 
-            services.AddTransient<InitializeCommand>();
-            services.AddTransient<AddServiceCommand>();
-            services.AddTransient<AddWebAppCommand>();
-
-            var serviceProvider = services.BuildServiceProvider();
+            using var serviceProvider = services.BuildServiceProvider();
 
             return await new CliApplicationBuilder()
                 .AddCommandsFromThisAssembly()

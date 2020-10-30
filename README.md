@@ -11,9 +11,9 @@ A .NET CLI tool for creating and managing projects in a folder structure suitabl
 - Can add components to the service according to Domain-Driven Design
 
 ## Usage
-- [dotnet hexa init](https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli/blob/main/docs/)
-- `dotnet hexa help` - Shows help information and a list of commands.
-- `dotnet hexa init` - Initializes the project with default project folder structure.
-- `dotnet hexa add service` - Adds a ASP.NET Core project type with all the dependencies.
-- `dotnet hexa add webapp` - Adds a ASP.NET Core MVC project type with all the dependencies.
-- `dotnet hexa add component` - Adds a component to a project.
+- [dotnet hexa](https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli/blob/main/docs/hexagonal.init.md) - Shows help information and a list of commands.
+- [dotnet hexa config](https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli/blob/main/docs/hexagonal.configuration.md) - Gets or sets the configuration values for the tool.
+- [dotnet hexa init](https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli/blob/main/docs/hexagonal.init.md) - Initializes the project with default project folder structure.
+- [dotnet hexa add service](https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli/blob/main/docs/hexagonal.add.service.md) - Adds a ASP.NET Core project type with all the dependencies.
+- [dotnet hexa add webapp](https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli/blob/main/docs/hexagonal.add.webapp.md) - Adds a ASP.NET Core MVC project type with all the dependencies.
+- [dotnet hexa add aggregate](https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli/blob/main/docs/hexagonal.add.aggregate.md) - Adds an aggregate entity to the project.

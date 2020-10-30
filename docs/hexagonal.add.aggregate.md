@@ -1,15 +1,15 @@
-# dotnet hexa add component
+# dotnet hexa add aggregate
 
 ## Name
 
-`dotnet hexa add component` - Add a component to a specified project / container.
+`dotnet hexa add aggregate` - Add an aggregate to a specified project / container.
 
 ## Synopsis
 
 ```bash
-dotnet hexa add component <COMPONENT_NAME>
+dotnet hexa add aggregate <AGGREGATE_NAME>
 
-dotnet hexa add component --help
+dotnet hexa add aggregate --help
 ```
 
 ## Description
@@ -26,10 +26,10 @@ dotnet hexa add component --help
 
 ## Arguments
 
-- `COMPONENT_NAME`
+- `AGGREGATE_NAME`
 
 ## Examples
 
 ```bash
-dotnet hexa add component "COMPONENT_NAME" --service "SERVICE_NAME"
+dotnet hexa add aggregate "AGGREGATE_NAME" --service "SERVICE_NAME"
 ```

@@ -32,13 +32,19 @@ namespace Silent.Tool.Hexagonal.Cli
         private bool HandleAddWebAppCommand(IOptions<GeneralOptions> options)
         {
             string frameworkOption = Framework ?? options.Value.Framework.Default;
-            string serviceRelativePath = $"src/{options.Value.Folders.WebAppsFolder}/{WebAppName}";
+            string serviceRelativePath = $"src/{options.Value.Folders.WebAppsFolder}";
             string webappProjectName = $"{WebAppName}.Web";
             string webappRelativePath = $"{serviceRelativePath}/{webappProjectName}";
-            string webappCommand = $"dotnet new webapi --name \"{webappProjectName}\" --output \"{webappRelativePath}\" --framework {frameworkOption}";
+            string webappCommand = $"dotnet new webapp --name \"{webappProjectName}\" --output \"{webappRelativePath}\" --framework {frameworkOption}";
+
+            string solutionWebAppReferences = $"dotnet sln add"
+                + $" \"{webappRelativePath}/{webappProjectName}.csproj\""
+                + $" --solution-folder \"src\"";
 
             var successfull = true;
+
             successfull = successfull && StringExtensions.RunInCommandPrompt(webappCommand);
+            successfull = successfull && StringExtensions.RunInCommandPrompt(solutionWebAppReferences);
 
             return successfull;
         }
