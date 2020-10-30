@@ -10,11 +10,11 @@ The tool supports a small set of configurable options for those who desire some 
         "default": "net5.0" // Use typical TFMs for .NET
     },
     "folders": {
-        "clients_folder": "clients",
-        "docs_folder": "docs",
-        "samples_folder": "samples",
-        "services_folder": "services",
-        "webapps_folder": "webapps",
+        "clientsFolder": "clients",
+        "docsFolder": "docs",
+        "samplesFolder": "samples",
+        "servicesFolder": "services",
+        "webappsFolder": "webapps",
     }
 }
 ```

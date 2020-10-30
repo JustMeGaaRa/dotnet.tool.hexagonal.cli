@@ -49,11 +49,33 @@ namespace Silent.Tool.Hexagonal.Cli
             string webapiCommand = $"dotnet new webapi --name \"{webapiProjectName}\" --output \"{webapiRelativePath}\" --framework {framework}";
             string unitTestCommand = $"dotnet new xunit --name \"{testProjectName}\" --output \"{testRelativePath}\" --framework {framework}";
 
+            string infraReferencesCommand = $"dotnet add {infraRelativePath} reference {domainRelativePath}";
+            string apiReferencesCommand = $"dotnet add {webapiRelativePath} reference {domainRelativePath} {infraRelativePath}";
+            string testReferencesCommand = $"dotnet add {testRelativePath} reference {domainRelativePath}";
+
+            string solutionServiceReferences = $"dotnet sln add"
+                + $" \"{domainRelativePath}/{domainProjectName}.csproj\""
+                + $" \"{infraRelativePath}/{infraProjectName}.csproj\""
+                + $" \"{webapiRelativePath}/{webapiProjectName}.csproj\""
+                + $" --solution-folder \"src\"";
+
+            string solutionTestReferences = $"dotnet sln add"
+                + $" \"{testRelativePath}/{testProjectName}.csproj\""
+                + $" --solution-folder \"test\"";
+
             var successfull = true;
+
             successfull = successfull && StringExtensions.RunInCommandPrompt(domainCommand);
             successfull = successfull && StringExtensions.RunInCommandPrompt(infraCommand);
             successfull = successfull && StringExtensions.RunInCommandPrompt(webapiCommand);
             successfull = successfull && StringExtensions.RunInCommandPrompt(unitTestCommand);
+
+            successfull = successfull && StringExtensions.RunInCommandPrompt(infraReferencesCommand);
+            successfull = successfull && StringExtensions.RunInCommandPrompt(apiReferencesCommand);
+            successfull = successfull && StringExtensions.RunInCommandPrompt(testReferencesCommand);
+
+            successfull = successfull && StringExtensions.RunInCommandPrompt(solutionServiceReferences);
+            successfull = successfull && StringExtensions.RunInCommandPrompt(solutionTestReferences);
 
             return successfull;
         }

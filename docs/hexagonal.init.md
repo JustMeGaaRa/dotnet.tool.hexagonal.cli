@@ -8,9 +8,6 @@
 
 ```bash
 dotnet hexa init <PROJECT_NAME>
-    [-f|--framework <FRAMEWORK>]
-
-dotnet hexa [-h|--help]
 ```
 
 ## Description
@@ -31,18 +28,8 @@ Creates the following folder structure:
 
 - `PROJECT_NAME` - The name of the service.
 
-## Options
-
-| Name          | Options           | Description   |
-|---            |---                |---            |
-| `--framework` | net3.1, net5.0    | The target framework for the service  |
-
 ## Examples
 
 ```bash
-dotnet hexa init --name "PROJECT_NAME"
-
-dotnet hexa init --name "PROJECT_NAME" --framework "net5.0"
-
-dotnet hexa init --name "PROJECT_NAME" --framework "net3.1"
+dotnet hexa init "PROJECT_NAME"
 ```
