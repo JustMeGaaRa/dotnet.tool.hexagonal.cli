@@ -1,8 +1,10 @@
 ﻿using CliFx;
 using CliFx.Attributes;
+using CliWrap;
 using Microsoft.Extensions.Options;
 using Silent.Tool.Hexagonal.Cli.Infrastructure.Options;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Silent.Tool.Hexagonal.Cli
@@ -23,30 +25,77 @@ namespace Silent.Tool.Hexagonal.Cli
         [CommandOption("--framework", 'f')]
         public string Framework { get; set; }
 
-        public ValueTask ExecuteAsync(IConsole console)
+        public string WebAppProjectName => $"{WebAppName}.Web";
+
+        public async ValueTask ExecuteAsync(IConsole console)
         {
-            var task = Task.FromResult(HandleAddWebAppCommand(_options));
-            return new ValueTask(task);
+            await HandleProjectCreation(_options);
+            await HandleProjectReferences(_options);
+            await HandleSolutionReferences(_options);
         }
 
-        private bool HandleAddWebAppCommand(IOptions<GeneralOptions> options)
+        private string GetServiceRelativePath(IOptions<GeneralOptions> options, string webappProjectName)
         {
-            string frameworkOption = Framework ?? options.Value.Framework.Default;
-            string serviceRelativePath = $"src/{options.Value.Folders.WebAppsFolder}";
-            string webappProjectName = $"{WebAppName}.Web";
-            string webappRelativePath = $"{serviceRelativePath}/{webappProjectName}";
-            string webappCommand = $"dotnet new webapp --name \"{webappProjectName}\" --output \"{webappRelativePath}\" --framework {frameworkOption}";
+            string serviceRelativePath = $"src/{options.Value.Folders.WebAppsFolder}/{WebAppName}/{webappProjectName}";
+            return serviceRelativePath;
+        }
 
-            string solutionWebAppReferences = $"dotnet sln add"
-                + $" \"{webappRelativePath}/{webappProjectName}.csproj\""
-                + $" --solution-folder \"src\"";
+        private async Task<bool> HandleProjectCreation(IOptions<GeneralOptions> options)
+        {
+            var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
+            string framework = Framework ?? options.Value.Framework.Default;
+            string webappRelativePath = GetServiceRelativePath(options, WebAppProjectName);
 
-            var successfull = true;
+            // dotnet new webapp --name \"{WebAppProjectName}\" --output \"{webappRelativePath}\" --framework {framework}
+            var webappCommand = CliWrap.Cli.Wrap("dotnet")
+                .WithStandardOutputPipe(consoleOutputTarget)
+                .WithArguments(args => args
+                    .Add("new")
+                    .Add("webapp")
+                    .Add("--name")
+                    .Add(WebAppProjectName)
+                    .Add("--output")
+                    .Add(webappRelativePath)
+                    .Add("--framework")
+                    .Add(framework));
 
-            successfull = successfull && StringExtensions.RunInCommandPrompt(webappCommand);
-            successfull = successfull && StringExtensions.RunInCommandPrompt(solutionWebAppReferences);
+            var webappResult = await webappCommand.ExecuteAsync();
 
-            return successfull;
+            var results = new[]
+            {
+                webappResult
+            };
+
+            return results.All(r => r.ExitCode == 0);
+        }
+
+        private Task<bool> HandleProjectReferences(IOptions<GeneralOptions> options)
+        {
+            return Task.FromResult(true);
+        }
+
+        private async Task<bool> HandleSolutionReferences(IOptions<GeneralOptions> options)
+        {
+            var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
+            string webappRelativePath = GetServiceRelativePath(options, WebAppProjectName);
+
+            var solutionServiceReferencesCommand = CliWrap.Cli.Wrap("dotnet")
+                .WithStandardOutputPipe(consoleOutputTarget)
+                .WithArguments(args => args
+                    .Add("sln")
+                    .Add("add")
+                    .Add($"{webappRelativePath}/{WebAppProjectName}.csproj")
+                    .Add("--solution-folder")
+                    .Add("src"));
+
+            var solutionServiceReferencesResult = await solutionServiceReferencesCommand.ExecuteAsync();
+
+            var results = new[]
+            {
+                solutionServiceReferencesResult
+            };
+
+            return results.All(r => r.ExitCode == 0);
         }
     }
 }

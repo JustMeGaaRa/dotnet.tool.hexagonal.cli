@@ -1,8 +1,10 @@
 ﻿using CliFx;
 using CliFx.Attributes;
+using CliWrap;
 using Microsoft.Extensions.Options;
 using Silent.Tool.Hexagonal.Cli.Infrastructure.Options;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Silent.Tool.Hexagonal.Cli
@@ -23,61 +25,199 @@ namespace Silent.Tool.Hexagonal.Cli
         [CommandOption("--framework", 'f')]
         public string Framework { get; set; }
 
-        public ValueTask ExecuteAsync(IConsole console)
+        public string DomainProjectName => $"{ServiceName}.Domain";
+
+        public string InfraProjectName => $"{ServiceName}.Infrastructure";
+
+        public string WebapiProjectName => $"{ServiceName}.Api";
+
+        public string TestProjectName => $"{ServiceName}.Domain.Tests";
+
+        public async ValueTask ExecuteAsync(IConsole console)
         {
-            var task = Task.FromResult(HandleAddServiceCommand(_options));
-            return new ValueTask(task);
+            await HandleProjectCreation(_options);
+            await HandleProjectReferences(_options);
+            await HandleSolutionReferences(_options);
         }
 
-        private bool HandleAddServiceCommand(IOptions<GeneralOptions> options)
+        private string GetServiceRelativePath(IOptions<GeneralOptions> options, string serviceProjectName)
         {
-            string framework = Framework ?? options.Value.Framework.Default;
-            string serviceRelativePath = $"src/{options.Value.Folders.ServicesFolder}/{ServiceName}";
+            string serviceRelativePath = $"src/{options.Value.Folders.ServicesFolder}/{ServiceName}/{serviceProjectName}";
+            return serviceRelativePath;
+        }
 
-            string domainProjectName = $"{ServiceName}.Domain";
-            string infraProjectName = $"{ServiceName}.Infrastructure";
-            string webapiProjectName = $"{ServiceName}.Api";
-            string testProjectName = $"{ServiceName}.Domain.Tests";
-
-            string domainRelativePath = $"{serviceRelativePath}/{domainProjectName}";
-            string infraRelativePath = $"{serviceRelativePath}/{infraProjectName}";
-            string webapiRelativePath = $"{serviceRelativePath}/{webapiProjectName}";
+        private string GetTestRelativePath(IOptions<GeneralOptions> options, string testProjectName)
+        {
             string testRelativePath = $"test/{testProjectName}";
+            return testRelativePath;
+        }
 
-            string domainCommand = $"dotnet new classlib --name \"{domainProjectName}\" --output \"{domainRelativePath}\" --framework {framework}";
-            string infraCommand = $"dotnet new classlib --name \"{infraProjectName}\" --output \"{infraRelativePath}\" --framework {framework}";
-            string webapiCommand = $"dotnet new webapi --name \"{webapiProjectName}\" --output \"{webapiRelativePath}\" --framework {framework}";
-            string unitTestCommand = $"dotnet new xunit --name \"{testProjectName}\" --output \"{testRelativePath}\" --framework {framework}";
+        private async Task<bool> HandleProjectCreation(IOptions<GeneralOptions> options)
+        {
+            var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
+            string framework = Framework ?? options.Value.Framework.Default;
 
-            string infraReferencesCommand = $"dotnet add {infraRelativePath} reference {domainRelativePath}";
-            string apiReferencesCommand = $"dotnet add {webapiRelativePath} reference {domainRelativePath} {infraRelativePath}";
-            string testReferencesCommand = $"dotnet add {testRelativePath} reference {domainRelativePath}";
+            string domainRelativePath = GetServiceRelativePath(options, DomainProjectName);
+            string infraRelativePath = GetServiceRelativePath(options, InfraProjectName);
+            string webapiRelativePath = GetServiceRelativePath(options, WebapiProjectName);
+            string testRelativePath = GetTestRelativePath(options, TestProjectName);
 
-            string solutionServiceReferences = $"dotnet sln add"
-                + $" \"{domainRelativePath}/{domainProjectName}.csproj\""
-                + $" \"{infraRelativePath}/{infraProjectName}.csproj\""
-                + $" \"{webapiRelativePath}/{webapiProjectName}.csproj\""
-                + $" --solution-folder \"src\"";
+            // dotnet new classlib --name \"{domainProjectName}\" --output \"{domainRelativePath}\" --framework {framework}
+            var domainCommand = CliWrap.Cli.Wrap("dotnet")
+                .WithStandardOutputPipe(consoleOutputTarget)
+                .WithArguments(args => args
+                    .Add("new")
+                    .Add("classlib")
+                    .Add("--name")
+                    .Add(DomainProjectName)
+                    .Add("--output")
+                    .Add(domainRelativePath)
+                    .Add("--framework")
+                    .Add(framework));
 
-            string solutionTestReferences = $"dotnet sln add"
-                + $" \"{testRelativePath}/{testProjectName}.csproj\""
-                + $" --solution-folder \"test\"";
+            // dotnet new classlib --name \"{infraProjectName}\" --output \"{infraRelativePath}\" --framework {framework}
+            var infraCommand = CliWrap.Cli.Wrap("dotnet")
+                .WithStandardOutputPipe(consoleOutputTarget)
+                .WithArguments(args => args
+                    .Add("new")
+                    .Add("classlib")
+                    .Add("--name")
+                    .Add(InfraProjectName)
+                    .Add("--output")
+                    .Add(infraRelativePath)
+                    .Add("--framework")
+                    .Add(framework));
 
-            var successfull = true;
+            // dotnet new webapi --name \"{webapiProjectName}\" --output \"{webapiRelativePath}\" --framework {framework}
+            var webapiCommand = CliWrap.Cli.Wrap("dotnet")
+                .WithStandardOutputPipe(consoleOutputTarget)
+                .WithArguments(args => args
+                    .Add("new")
+                    .Add("webapi")
+                    .Add("--name")
+                    .Add(WebapiProjectName)
+                    .Add("--output")
+                    .Add(webapiRelativePath)
+                    .Add("--framework")
+                    .Add(framework));
 
-            successfull = successfull && StringExtensions.RunInCommandPrompt(domainCommand);
-            successfull = successfull && StringExtensions.RunInCommandPrompt(infraCommand);
-            successfull = successfull && StringExtensions.RunInCommandPrompt(webapiCommand);
-            successfull = successfull && StringExtensions.RunInCommandPrompt(unitTestCommand);
+            // dotnet new xunit --name \"{testProjectName}\" --output \"{testRelativePath}\" --framework {framework}
+            var unitTestCommand = CliWrap.Cli.Wrap("dotnet")
+                .WithStandardOutputPipe(consoleOutputTarget)
+                .WithArguments(args => args
+                    .Add("new")
+                    .Add("xunit")
+                    .Add("--name")
+                    .Add(TestProjectName)
+                    .Add("--output")
+                    .Add(testRelativePath)
+                    .Add("--framework")
+                    .Add(framework));
 
-            successfull = successfull && StringExtensions.RunInCommandPrompt(infraReferencesCommand);
-            successfull = successfull && StringExtensions.RunInCommandPrompt(apiReferencesCommand);
-            successfull = successfull && StringExtensions.RunInCommandPrompt(testReferencesCommand);
+            var domainResult = await domainCommand.ExecuteAsync();
+            var infraResult = await infraCommand.ExecuteAsync();
+            var webapiResult = await webapiCommand.ExecuteAsync();
+            var unitTestResult = await unitTestCommand.ExecuteAsync();
 
-            successfull = successfull && StringExtensions.RunInCommandPrompt(solutionServiceReferences);
-            successfull = successfull && StringExtensions.RunInCommandPrompt(solutionTestReferences);
+            var results = new[]
+            {
+                domainResult,
+                infraResult,
+                webapiResult,
+                unitTestResult
+            };
 
-            return successfull;
+            return results.All(r => r.ExitCode == 0);
+        }
+
+        private async Task<bool> HandleProjectReferences(IOptions<GeneralOptions> options)
+        {
+            var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
+            string domainRelativePath = GetServiceRelativePath(options, DomainProjectName);
+            string infraRelativePath = GetServiceRelativePath(options, InfraProjectName);
+            string webapiRelativePath = GetServiceRelativePath(options, WebapiProjectName);
+            string testRelativePath = GetTestRelativePath(options, TestProjectName);
+
+            // dotnet add {infraRelativePath} reference {domainRelativePath}
+            var infraReferencesCommand = CliWrap.Cli.Wrap("dotnet")
+                .WithStandardOutputPipe(consoleOutputTarget)
+                .WithArguments(args => args
+                    .Add("add")
+                    .Add(infraRelativePath)
+                    .Add("reference")
+                    .Add(domainRelativePath));
+
+            // dotnet add {webapiRelativePath} reference {domainRelativePath} {infraRelativePath}
+            var apiReferencesCommand = CliWrap.Cli.Wrap("dotnet")
+                .WithStandardOutputPipe(consoleOutputTarget)
+                .WithArguments(args => args
+                    .Add("add")
+                    .Add(webapiRelativePath)
+                    .Add("reference")
+                    .Add(domainRelativePath)
+                    .Add(infraRelativePath));
+
+            // dotnet add {testRelativePath} reference {domainRelativePath}
+            var testReferencesCommand = CliWrap.Cli.Wrap("dotnet")
+                .WithStandardOutputPipe(consoleOutputTarget)
+                .WithArguments(args => args
+                    .Add("add")
+                    .Add(testRelativePath)
+                    .Add("reference")
+                    .Add(domainRelativePath));
+
+            var infraReferencesResult = await infraReferencesCommand.ExecuteAsync();
+            var apiReferencesResult = await apiReferencesCommand.ExecuteAsync();
+            var testReferencesResult = await testReferencesCommand.ExecuteAsync();
+
+            var results = new[]
+            {
+                infraReferencesResult,
+                apiReferencesResult,
+                testReferencesResult
+            };
+
+            return results.All(r => r.ExitCode == 0);
+        }
+
+        private async Task<bool> HandleSolutionReferences(IOptions<GeneralOptions> options)
+        {
+            var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
+            string domainRelativePath = GetServiceRelativePath(options, DomainProjectName);
+            string infraRelativePath = GetServiceRelativePath(options, InfraProjectName);
+            string webapiRelativePath = GetServiceRelativePath(options, WebapiProjectName);
+            string testRelativePath = GetTestRelativePath(options, TestProjectName);
+
+            var solutionServiceReferencesCommand = CliWrap.Cli.Wrap("dotnet")
+                .WithStandardOutputPipe(consoleOutputTarget)
+                .WithArguments(args => args
+                    .Add("sln")
+                    .Add("add")
+                    .Add($"{domainRelativePath}/{DomainProjectName}.csproj")
+                    .Add($"{infraRelativePath}/{InfraProjectName}.csproj")
+                    .Add($"{webapiRelativePath}/{WebapiProjectName}.csproj")
+                    .Add("--solution-folder")
+                    .Add($"src\\{options.Value.Folders.ServicesFolder}\\{ServiceName}"));
+
+            var solutionTestReferencesCommand = CliWrap.Cli.Wrap("dotnet")
+                .WithStandardOutputPipe(consoleOutputTarget)
+                .WithArguments(args => args
+                    .Add("sln")
+                    .Add("add")
+                    .Add($"{testRelativePath}/{TestProjectName}.csproj")
+                    .Add("--solution-folder")
+                    .Add("test"));
+
+            var solutionServiceReferencesResult = await solutionServiceReferencesCommand.ExecuteAsync();
+            var solutionTestReferencesResult = await solutionTestReferencesCommand.ExecuteAsync();
+
+            var results = new[]
+            {
+                solutionServiceReferencesResult,
+                solutionTestReferencesResult
+            };
+
+            return results.All(x => x.ExitCode == 0);
         }
     }
 }
