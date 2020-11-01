@@ -2,8 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-
     <IsPackable>false</IsPackable>
+    <Copyright>Pavlo Hodysh</Copyright>
+    <RepositoryUrl>https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli</RepositoryUrl>
+    <RepositoryType>GitHub</RepositoryType>
+    <PackageTags>dotnet, tool, clean architecture, hexagonal architecture, project structure, folder structure, micorservices, domain driven design</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +22,9 @@
 
   <ItemGroup>
     <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="xunit.runner.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

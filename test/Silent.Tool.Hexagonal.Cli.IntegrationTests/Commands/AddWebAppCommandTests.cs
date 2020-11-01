@@ -11,11 +11,11 @@ namespace Silent.Tool.Hexagonal.Cli.IntegrationTests.Commands
         public async void RunAsync_ShouldCreateWebApp()
         {
             // Arrange
-            var serviceProvider = Startup.CreateServiceProvider<InitializeCommand>();
+            var serviceProvider = Startup.CreateServiceProvider<AddWebAppCommand>();
             var (console, stdOut, _) = VirtualConsole.CreateBuffered();
 
             var app = new CliApplicationBuilder()
-                .AddCommand<InitializeCommand>()
+                .AddCommand<AddWebAppCommand>()
                 .UseTypeActivator(serviceProvider.GetService)
                 .UseConsole(console)
                 .Build();
@@ -29,7 +29,10 @@ namespace Silent.Tool.Hexagonal.Cli.IntegrationTests.Commands
             await app.RunAsync(args, envVars);
 
             // Assert
-            Assert.True(Directory.Exists("eShopOnWeb/src/webapps/eShopOnWeb/eShopOnWeb.Web"));
+            Assert.True(Directory.Exists("src/webapps/eShopOnWeb/eShopOnWeb.Web"));
+
+            // Cleanup
+            if (Directory.Exists("src")) Directory.Delete("src", true);
         }
     }
 }

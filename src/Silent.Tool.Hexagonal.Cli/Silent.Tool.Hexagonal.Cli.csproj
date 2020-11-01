@@ -7,6 +7,10 @@
 	<Description>The .NET CLI tool for creating projects with Hexagonal Architecture structure.</Description>
 	<PackAsTool>true</PackAsTool>
 	<ToolCommandName>hexa</ToolCommandName>
+	<Copyright>Pavlo Hodysh</Copyright>
+	<RepositoryUrl>https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli</RepositoryUrl>
+	<RepositoryType>GitHub</RepositoryType>
+	<PackageTags>dotnet, tool, clean architecture, hexagonal architecture, project structure, folder structure, micorservices, domain driven design</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

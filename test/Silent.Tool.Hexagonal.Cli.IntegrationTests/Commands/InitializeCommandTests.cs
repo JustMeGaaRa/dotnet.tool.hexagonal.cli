@@ -31,6 +31,9 @@ namespace Silent.Tool.Hexagonal.Cli.IntegrationTests.Commands
             Assert.True(Directory.Exists("eShopOnWeb"));
             Assert.True(Directory.Exists("eShopOnWeb/src"));
             Assert.True(Directory.Exists("eShopOnWeb/test"));
+
+            // Cleanup
+            if (Directory.Exists("eShopOnWeb")) Directory.Delete("eShopOnWeb", true);
         }
     }
 }

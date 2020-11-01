@@ -4,6 +4,7 @@ using CliWrap;
 using Microsoft.Extensions.Options;
 using Silent.Tool.Hexagonal.Cli.Infrastructure.Options;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -76,26 +77,32 @@ namespace Silent.Tool.Hexagonal.Cli
 
         private async Task<bool> HandleSolutionReferences(IOptions<GeneralOptions> options)
         {
-            var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
-            string webappRelativePath = GetServiceRelativePath(options, WebAppProjectName);
-
-            var solutionServiceReferencesCommand = CliWrap.Cli.Wrap("dotnet")
-                .WithStandardOutputPipe(consoleOutputTarget)
-                .WithArguments(args => args
-                    .Add("sln")
-                    .Add("add")
-                    .Add($"{webappRelativePath}/{WebAppProjectName}.csproj")
-                    .Add("--solution-folder")
-                    .Add("src"));
-
-            var solutionServiceReferencesResult = await solutionServiceReferencesCommand.ExecuteAsync();
-
-            var results = new[]
+            if (Directory.GetFiles("./", "*.sln").Any())
             {
-                solutionServiceReferencesResult
-            };
+                var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
+                string webappRelativePath = GetServiceRelativePath(options, WebAppProjectName);
 
-            return results.All(r => r.ExitCode == 0);
+                var solutionServiceReferencesCommand = CliWrap.Cli.Wrap("dotnet")
+                    .WithStandardOutputPipe(consoleOutputTarget)
+                    .WithArguments(args => args
+                        .Add("sln")
+                        .Add("add")
+                        .Add($"{webappRelativePath}/{WebAppProjectName}.csproj")
+                        .Add("--solution-folder")
+                        .Add("src"));
+
+                var solutionServiceReferencesResult = await solutionServiceReferencesCommand.ExecuteAsync();
+
+                var results = new[]
+                {
+                    solutionServiceReferencesResult
+                };
+
+                return results.All(r => r.ExitCode == 0);
+
+            }
+
+            return false;
         }
     }
 }

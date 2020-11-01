@@ -4,6 +4,7 @@ using CliWrap;
 using Microsoft.Extensions.Options;
 using Silent.Tool.Hexagonal.Cli.Infrastructure.Options;
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -182,42 +183,47 @@ namespace Silent.Tool.Hexagonal.Cli
 
         private async Task<bool> HandleSolutionReferences(IOptions<GeneralOptions> options)
         {
-            var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
-            string domainRelativePath = GetServiceRelativePath(options, DomainProjectName);
-            string infraRelativePath = GetServiceRelativePath(options, InfraProjectName);
-            string webapiRelativePath = GetServiceRelativePath(options, WebapiProjectName);
-            string testRelativePath = GetTestRelativePath(options, TestProjectName);
-
-            var solutionServiceReferencesCommand = CliWrap.Cli.Wrap("dotnet")
-                .WithStandardOutputPipe(consoleOutputTarget)
-                .WithArguments(args => args
-                    .Add("sln")
-                    .Add("add")
-                    .Add($"{domainRelativePath}/{DomainProjectName}.csproj")
-                    .Add($"{infraRelativePath}/{InfraProjectName}.csproj")
-                    .Add($"{webapiRelativePath}/{WebapiProjectName}.csproj")
-                    .Add("--solution-folder")
-                    .Add($"src\\{options.Value.Folders.ServicesFolder}\\{ServiceName}"));
-
-            var solutionTestReferencesCommand = CliWrap.Cli.Wrap("dotnet")
-                .WithStandardOutputPipe(consoleOutputTarget)
-                .WithArguments(args => args
-                    .Add("sln")
-                    .Add("add")
-                    .Add($"{testRelativePath}/{TestProjectName}.csproj")
-                    .Add("--solution-folder")
-                    .Add("test"));
-
-            var solutionServiceReferencesResult = await solutionServiceReferencesCommand.ExecuteAsync();
-            var solutionTestReferencesResult = await solutionTestReferencesCommand.ExecuteAsync();
-
-            var results = new[]
+            if (Directory.GetFiles("./", "*.sln").Any())
             {
-                solutionServiceReferencesResult,
-                solutionTestReferencesResult
-            };
+                var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
+                string domainRelativePath = GetServiceRelativePath(options, DomainProjectName);
+                string infraRelativePath = GetServiceRelativePath(options, InfraProjectName);
+                string webapiRelativePath = GetServiceRelativePath(options, WebapiProjectName);
+                string testRelativePath = GetTestRelativePath(options, TestProjectName);
 
-            return results.All(x => x.ExitCode == 0);
+                var solutionServiceReferencesCommand = CliWrap.Cli.Wrap("dotnet")
+                    .WithStandardOutputPipe(consoleOutputTarget)
+                    .WithArguments(args => args
+                        .Add("sln")
+                        .Add("add")
+                        .Add($"{domainRelativePath}/{DomainProjectName}.csproj")
+                        .Add($"{infraRelativePath}/{InfraProjectName}.csproj")
+                        .Add($"{webapiRelativePath}/{WebapiProjectName}.csproj")
+                        .Add("--solution-folder")
+                        .Add($"src\\{options.Value.Folders.ServicesFolder}\\{ServiceName}"));
+
+                var solutionTestReferencesCommand = CliWrap.Cli.Wrap("dotnet")
+                    .WithStandardOutputPipe(consoleOutputTarget)
+                    .WithArguments(args => args
+                        .Add("sln")
+                        .Add("add")
+                        .Add($"{testRelativePath}/{TestProjectName}.csproj")
+                        .Add("--solution-folder")
+                        .Add("test"));
+
+                var solutionServiceReferencesResult = await solutionServiceReferencesCommand.ExecuteAsync();
+                var solutionTestReferencesResult = await solutionTestReferencesCommand.ExecuteAsync();
+
+                var results = new[]
+                {
+                    solutionServiceReferencesResult,
+                    solutionTestReferencesResult
+                };
+
+                return results.All(x => x.ExitCode == 0);
+            }
+
+            return false;
         }
     }
 }

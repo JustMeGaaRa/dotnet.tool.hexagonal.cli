@@ -39,8 +39,7 @@ namespace Silent.Tool.Hexagonal.Cli
                     .Add("--name")
                     .Add(ProjectName)
                     .Add("--output")
-                    .Add(ProjectName)
-                    .Add("--framework"));
+                    .Add(ProjectName));
 
             var domainCommandResult = await domainCommand.ExecuteAsync();
 

@@ -11,11 +11,11 @@ namespace Silent.Tool.Hexagonal.Cli.IntegrationTests.Commands
         public async void RunAsync_ShouldCreateService()
         {
             // Arrange
-            var serviceProvider = Startup.CreateServiceProvider<InitializeCommand>();
+            var serviceProvider = Startup.CreateServiceProvider<AddServiceCommand>();
             var (console, stdOut, _) = VirtualConsole.CreateBuffered();
 
             var app = new CliApplicationBuilder()
-                .AddCommand<InitializeCommand>()
+                .AddCommand<AddServiceCommand>()
                 .UseTypeActivator(serviceProvider.GetService)
                 .UseConsole(console)
                 .Build();
@@ -29,10 +29,14 @@ namespace Silent.Tool.Hexagonal.Cli.IntegrationTests.Commands
             await app.RunAsync(args, envVars);
 
             // Assert
-            Assert.True(Directory.Exists("eShopOnWeb/src/services/Orders/Orders.Api"));
-            Assert.True(Directory.Exists("eShopOnWeb/src/services/Orders/Orders.Domain"));
-            Assert.True(Directory.Exists("eShopOnWeb/src/services/Orders/Orders.Infrastructure"));
-            Assert.True(Directory.Exists("eShopOnWeb/test/Orders.Domain.Tests"));
+            Assert.True(Directory.Exists("src/services/Orders/Orders.Api"));
+            Assert.True(Directory.Exists("src/services/Orders/Orders.Domain"));
+            Assert.True(Directory.Exists("src/services/Orders/Orders.Infrastructure"));
+            Assert.True(Directory.Exists("test/Orders.Domain.Tests"));
+
+            // Cleanup
+            if (Directory.Exists("src")) Directory.Delete("src", true);
+            if (Directory.Exists("test")) Directory.Delete("test", true);
         }
     }
 }
