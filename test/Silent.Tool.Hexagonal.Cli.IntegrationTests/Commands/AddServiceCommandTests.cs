@@ -12,7 +12,7 @@ namespace Silent.Tool.Hexagonal.Cli.IntegrationTests.Commands
         {
             // Arrange
             var serviceProvider = Startup.CreateServiceProvider<AddServiceCommand>();
-            var (console, stdOut, _) = VirtualConsole.CreateBuffered();
+            var (console, output, _) = VirtualConsole.CreateBuffered();
 
             var app = new CliApplicationBuilder()
                 .AddCommand<AddServiceCommand>()
