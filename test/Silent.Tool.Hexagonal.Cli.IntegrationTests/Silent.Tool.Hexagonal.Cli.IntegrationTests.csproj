@@ -1,12 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
-    <Copyright>Pavlo Hodysh</Copyright>
-    <RepositoryUrl>https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli</RepositoryUrl>
-    <RepositoryType>GitHub</RepositoryType>
-    <PackageTags>dotnet, tool, clean architecture, hexagonal architecture, project structure, folder structure, micorservices, domain driven design</PackageTags>
+    <Authors>JustMeGaaRa</Authors>
+	<Copyright>Pavlo Hodysh</Copyright>
+	<RepositoryUrl>https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli</RepositoryUrl>
+	<RepositoryType>GitHub</RepositoryType>
+	<PackageTags>dotnet tool clean architecture hexagonal project structure folder structure micorservices domain-driven design</PackageTags>
+    <PackageProjectUrl>https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli</PackageProjectUrl>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
