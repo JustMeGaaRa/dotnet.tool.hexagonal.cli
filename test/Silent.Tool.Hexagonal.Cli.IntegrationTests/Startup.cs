@@ -17,6 +17,7 @@ namespace Silent.Tool.Hexagonal.Cli.IntegrationTests
             var services = new ServiceCollection()
                 .AddOptions()
                 .Configure<GeneralOptions>(config.GetSection(GeneralOptions.Name))
+                .AddSingleton<IConfiguration>(config)
                 .AddTransient<TCommand>();
 
             return services.BuildServiceProvider();
