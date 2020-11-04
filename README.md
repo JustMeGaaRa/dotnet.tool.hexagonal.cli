@@ -16,6 +16,8 @@ A .NET CLI tool for creating and managing projects in a folder structure suitabl
 
 ## Usage
 - [dotnet hexa](https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli/blob/main/docs/hexagonal.init.md) - Shows help information and a list of commands.
+- [dotnet hexa config set](https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli/blob/main/docs/hexagonal.configuration.md) - Gets or sets the configuration values for the tool.
+- [dotnet hexa config list](https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli/blob/main/docs/hexagonal.configuration.list.md) - Lists down the existing configuration keys and their value.
 - [dotnet hexa init](https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli/blob/main/docs/hexagonal.init.md) - Initializes the project with default project folder structure.
 - [dotnet hexa add service](https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli/blob/main/docs/hexagonal.add.service.md) - Adds a ASP.NET Core project type with all the dependencies.
 - [dotnet hexa add webapp](https://github.com/JustMeGaaRa/dotnet.tool.hexagonal.cli/blob/main/docs/hexagonal.add.webapp.md) - Adds a ASP.NET Core MVC project type with all the dependencies.
