@@ -1,6 +1,5 @@
 ﻿using CliFx;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Silent.Tool.Hexagonal.Cli.Commands;
 using System.Collections.Generic;
 using Xunit;
@@ -28,10 +27,12 @@ namespace Silent.Tool.Hexagonal.Cli.IntegrationTests.Commands
 
             // Act
             await app.RunAsync(args, envVars);
-            var settings = serviceProvider.GetService<IConfiguration>();
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", true, true)
+                .Build();
 
             // Assert
-            Assert.Equal("netcoreapp3.1", settings["general:framework:default"]);
+            Assert.Equal("netcoreapp3.1", config["general:framework:default"]);
         }
     }
 }
