@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-	<Version>1.0.0</Version>
+	<Version>1.1.1</Version>
 	<Description>A .NET CLI tool for creating and managing projects in a folder structure suitable for Hexagonal Architecture and Microservices. Is similar to how Angular CLI tool uses commands to create components, modules, services, etc.</Description>
 	<PackAsTool>true</PackAsTool>
 	<ToolCommandName>hexa</ToolCommandName>

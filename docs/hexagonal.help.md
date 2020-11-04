@@ -1,13 +1,13 @@
-# dotnet hexa help
+# hexa help
 
 ## Name
 
-`dotnet hexa help` - Display the help information and a list of commands.
+`hexa help` - Display the help information and a list of commands.
 
 ## Synopsis
 
 ```bash
-dotnet hexa help
+hexa help
 ```
 
 ## Description
@@ -15,9 +15,9 @@ dotnet hexa help
 ## Examples
 
 ```bash
-dotnet hexa
+hexa
 
-dotnet hexa help
+hexa help
 
-dotnet hexa --help
+hexa --help
 ```

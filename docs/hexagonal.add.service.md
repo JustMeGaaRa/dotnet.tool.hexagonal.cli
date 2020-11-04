@@ -1,16 +1,16 @@
-# dotnet hexa add service
+# hexa add service
 
 ## Name
 
-`dotnet hexa add service` - Adds the ASP.NET Core project to the solution using predefined project folder structure.
+`hexa add service` - Adds the ASP.NET Core project to the solution using predefined project folder structure.
 
 ## Synopsis
 
 ```bash
-dotnet hexa add service <SERVICE_NAME>
+hexa add service <SERVICE_NAME>
     [-f|--framework <FRAMEWORK>]
 
-dotnet hexa add service [-h|--help]
+hexa add service [-h|--help]
 ```
 
 ## Description
@@ -47,9 +47,9 @@ Creates the following folder structure:
 ## Examples
 
 ```bash
-dotnet hexa add service "SERVICE_NAME"
+hexa add service "SERVICE_NAME"
 
-dotnet hexa add service "SERVICE_NAME" --framework "net5.0"
+hexa add service "SERVICE_NAME" --framework "net5.0"
 
-dotnet hexa add service --help
+hexa add service --help
 ```

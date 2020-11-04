@@ -1,15 +1,15 @@
-# dotnet hexa add aggregate
+# hexa add aggregate
 
 ## Name
 
-`dotnet hexa add aggregate` - Add an aggregate to a specified project / container.
+`hexa add aggregate` - Add an aggregate to a specified project / container.
 
 ## Synopsis
 
 ```bash
-dotnet hexa add aggregate <AGGREGATE_NAME>
+hexa add aggregate <AGGREGATE_NAME>
 
-dotnet hexa add aggregate --help
+hexa add aggregate --help
 ```
 
 ## Description
@@ -31,5 +31,5 @@ dotnet hexa add aggregate --help
 ## Examples
 
 ```bash
-dotnet hexa add aggregate "AGGREGATE_NAME" --service "SERVICE_NAME"
+hexa add aggregate "AGGREGATE_NAME" --service "SERVICE_NAME"
 ```

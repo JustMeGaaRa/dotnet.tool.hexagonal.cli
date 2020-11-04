@@ -1,16 +1,16 @@
-# dotnet hexa add webapp
+# hexa add webapp
 
 ## Name
 
-`dotnet hexa add webapp` - Adds the ASP.NET Core MVC project to the solution using predefined project folder structure.
+`hexa add webapp` - Adds the ASP.NET Core MVC project to the solution using predefined project folder structure.
 
 ## Synopsis
 
 ```bash
-dotnet hexa add webapp <WEBAPP_NAME>
+hexa add webapp <WEBAPP_NAME>
     [-f|--framework <FRAMEWORK>]
 
-dotnet hexa add webapp [-h|--help]
+hexa add webapp [-h|--help]
 ```
 
 ## Description
@@ -40,9 +40,9 @@ Creates the following folder structure:
 ## Examples
 
 ```bash
-dotnet hexa add webapp "WEBAPP_NAME"
+hexa add webapp "WEBAPP_NAME"
 
-dotnet hexa add webapp "WEBAPP_NAME" --framework "net5.0"
+hexa add webapp "WEBAPP_NAME" --framework "net5.0"
 
-dotnet hexa add webapp --help
+hexa add webapp --help
 ```

@@ -1,13 +1,13 @@
-# dotnet hexa init
+# hexa init
 
 ## Name
 
-`dotnet hexa init` - Initializes the project with default project folder structure.
+`hexa init` - Initializes the project with default project folder structure.
 
 ## Synopsis
 
 ```bash
-dotnet hexa init <PROJECT_NAME>
+hexa init <PROJECT_NAME>
 ```
 
 ## Description
@@ -31,5 +31,5 @@ Creates the following folder structure:
 ## Examples
 
 ```bash
-dotnet hexa init "PROJECT_NAME"
+hexa init "PROJECT_NAME"
 ```
