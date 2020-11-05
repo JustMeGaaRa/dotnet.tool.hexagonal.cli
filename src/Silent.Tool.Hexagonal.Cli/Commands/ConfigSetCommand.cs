@@ -7,6 +7,7 @@ using Newtonsoft.Json.Serialization;
 using Silent.Tool.Hexagonal.Cli.Infrastructure.Options;
 using System;
 using System.IO;
+using System.Reflection;
 using System.Security;
 using System.Threading.Tasks;
 
@@ -42,13 +43,14 @@ namespace Silent.Tool.Hexagonal.Cli.Commands
 
             try
             {
+                var executingAssemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 var generalOptions = new GeneralOptions();
                 _configuration[Key] = Value;
                 _configuration.GetSection(GeneralOptions.Name).Bind(generalOptions);
 
                 var settings = new { General = generalOptions };
                 var json = JsonConvert.SerializeObject(settings, _jsonSettings);
-                File.WriteAllText("appsettings.json", json);
+                File.WriteAllText(Path.Combine(executingAssemblyPath, "appsettings.json"), json);
                 console.Output.WriteLine($"The setting '{Key}' was updated to a value '{Value}' successfully.");
             }
             catch (PathTooLongException ex)
