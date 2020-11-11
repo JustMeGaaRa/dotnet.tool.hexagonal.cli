@@ -3,7 +3,7 @@ A .NET CLI tool for creating and managing projects in a folder structure suitabl
 
 ## Install
 
-- `dotnet tool install Silent.Tool.Hexagonal.Cli --version 1.0.0`
+- `dotnet tool install Silent.Tool.Hexagonal.Cli`
 
 ## Features
 - Supports a command for generating a general-purpose solution folder structure for Clean Architecture projects

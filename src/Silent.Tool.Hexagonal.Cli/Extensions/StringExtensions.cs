@@ -8,5 +8,10 @@ namespace Silent.Tool.Hexagonal.Cli
         {
             return !Directory.Exists(directory) && Directory.CreateDirectory(directory) != null;
         }
+
+        public  static string ReplaceToken(this string template, string token, string value)
+        {
+            return template.Replace(token, value);
+        }
     }
 }

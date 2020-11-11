@@ -4,6 +4,10 @@ using CliWrap;
 using Microsoft.Extensions.Options;
 using Silent.Tool.Hexagonal.Cli.Infrastructure.Options;
 using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Security;
 using System.Threading.Tasks;
 
 namespace Silent.Tool.Hexagonal.Cli
@@ -11,9 +15,9 @@ namespace Silent.Tool.Hexagonal.Cli
     [Command("init")]
     public class InitializeCommand : ICommand
     {
-        private readonly IOptions<GeneralOptions> _options;
+        private readonly IOptions<GeneralSection> _options;
 
-        public InitializeCommand(IOptions<GeneralOptions> options)
+        public InitializeCommand(IOptions<GeneralSection> options)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
@@ -26,7 +30,7 @@ namespace Silent.Tool.Hexagonal.Cli
             await HandleIniCommand(_options);
         }
 
-        private async Task<bool> HandleIniCommand(IOptions<GeneralOptions> options)
+        private async Task<bool> HandleIniCommand(IOptions<GeneralSection> options)
         {
             var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
 
@@ -43,17 +47,51 @@ namespace Silent.Tool.Hexagonal.Cli
 
             var domainCommandResult = await domainCommand.ExecuteAsync();
 
-            var successfull = true;
+            return CopyDefaultConfig();
+        }
 
-            successfull &= StringExtensions.CreateDirectorySafely($"{ProjectName}/{options.Value.Folders.ClientsFolder}");
-            successfull &= StringExtensions.CreateDirectorySafely($"{ProjectName}/{options.Value.Folders.DocsFolder}");
-            successfull &= StringExtensions.CreateDirectorySafely($"{ProjectName}/{options.Value.Folders.SamplesFolder}");
-            successfull &= StringExtensions.CreateDirectorySafely($"{ProjectName}/src/{options.Value.Folders.ServicesFolder}");
-            successfull &= StringExtensions.CreateDirectorySafely($"{ProjectName}/src/{options.Value.Folders.WebAppsFolder}");
-            successfull &= StringExtensions.CreateDirectorySafely($"{ProjectName}/test");
-            successfull &= domainCommandResult.ExitCode == 0;
+        private bool CreateDefaultFolders(IOptions<GeneralSection> options)
+        {
+            var folders = new[]
+                        {
+                $"{ProjectName}/{options.Value.Folders.ClientsFolder}",
+                $"{ProjectName}/{options.Value.Folders.DocsFolder}",
+                $"{ProjectName}/{options.Value.Folders.SamplesFolder}",
+                $"{ProjectName}/src/{options.Value.Folders.ServicesFolder}",
+                $"{ProjectName}/src/{options.Value.Folders.WebAppsFolder}",
+                $"{ProjectName}/test"
+            };
 
-            return successfull;
+            return folders.Aggregate(true, (successful, folder) => successful && folder.CreateDirectorySafely());
+        }
+
+        private static bool CopyDefaultConfig()
+        {
+            try
+            {
+                var executingAssemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                var defaultConfigPath = Path.Combine(executingAssemblyPath, Constants.ConfigFileName);
+                var defaultConfigJson = File.ReadAllText(defaultConfigPath);
+                var currentDirectoryPath = "";
+                var currentDirectoryConfigPath = Path.Combine(currentDirectoryPath, Constants.ConfigFileName);
+                File.WriteAllText(currentDirectoryConfigPath, defaultConfigJson);
+                Console.WriteLine($"The default config with name '{Constants.ConfigFileName}' was copied to current directory.");
+                return true;
+            }
+            catch (PathTooLongException ex)
+            {
+                Console.WriteLine($"The path to the file is too long. Could not save the settings. Error: {ex}");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.WriteLine($"The access to the file is unauthorized to this app. Error: {ex}");
+            }
+            catch (SecurityException ex)
+            {
+                Console.WriteLine($"The security issue occured when trying to access the file. Error: {ex}");
+            }
+
+            return false;
         }
     }
 }

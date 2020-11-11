@@ -1,6 +1,6 @@
 ﻿namespace Silent.Tool.Hexagonal.Cli.Infrastructure.Options
 {
-    public class FrameworkOptions
+    public class FrameworkSection
     {
         public const string Name = "framework";
 

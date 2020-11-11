@@ -17,7 +17,7 @@ namespace Silent.Tool.Hexagonal.Cli
 
             var services = new ServiceCollection()
                 .AddOptions()
-                .Configure<GeneralOptions>(config.GetSection(GeneralOptions.Name))
+                .Configure<GeneralSection>(config)
                 .AddSingleton<IConfiguration>(config)
                 .AddTransient<InitializeCommand>()
                 .AddTransient<AddServiceCommand>()

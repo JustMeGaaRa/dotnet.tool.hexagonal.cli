@@ -1,6 +1,6 @@
 ﻿namespace Silent.Tool.Hexagonal.Cli.Infrastructure.Options
 {
-    public class FolderOptions
+    public class FolderSection
     {
         public const string Name = "folders";
 

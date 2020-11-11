@@ -13,9 +13,9 @@ namespace Silent.Tool.Hexagonal.Cli
     [Command("add service")]
     public class AddServiceCommand : ICommand
     {
-        private readonly IOptions<GeneralOptions> _options;
+        private readonly IOptions<GeneralSection> _options;
 
-        public AddServiceCommand(IOptions<GeneralOptions> options)
+        public AddServiceCommand(IOptions<GeneralSection> options)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
@@ -23,16 +23,11 @@ namespace Silent.Tool.Hexagonal.Cli
         [CommandParameter(0)]
         public string ServiceName { get; set; }
 
+        [CommandOption("--company", 'c')]
+        public string Company { get; set; }
+
         [CommandOption("--framework", 'f')]
         public string Framework { get; set; }
-
-        public string DomainProjectName => $"{ServiceName}.Domain";
-
-        public string InfraProjectName => $"{ServiceName}.Infrastructure";
-
-        public string WebapiProjectName => $"{ServiceName}.Api";
-
-        public string TestProjectName => $"{ServiceName}.Domain.Tests";
 
         public async ValueTask ExecuteAsync(IConsole console)
         {
@@ -41,27 +36,58 @@ namespace Silent.Tool.Hexagonal.Cli
             await HandleSolutionReferences(_options);
         }
 
-        private string GetServiceRelativePath(IOptions<GeneralOptions> options, string serviceProjectName)
+        private string GetServiceRelativePath(IOptions<GeneralSection> options, string serviceProjectType)
         {
-            string serviceRelativePath = $"src/{options.Value.Folders.ServicesFolder}/{ServiceName}/{serviceProjectName}";
+            string serviceRelativePath = $"{options.Value.Projects.Service.Path}/{_options.Value.Projects.Service.Template}"
+                .ReplaceToken(Constants.Tokens.CompanyTokenName, Company)
+                .ReplaceToken(Constants.Tokens.ServiceTokenName, ServiceName)
+                .ReplaceToken(Constants.Tokens.ProjectTypeTokenName, serviceProjectType);
             return serviceRelativePath;
         }
 
-        private string GetTestRelativePath(IOptions<GeneralOptions> options, string testProjectName)
+        private string GetServiceName(IOptions<GeneralSection> options, string serviceProjectType)
         {
-            string testRelativePath = $"test/{testProjectName}";
+            string serviceName = options.Value.Projects.Service.Template
+                .ReplaceToken(Constants.Tokens.CompanyTokenName, Company)
+                .ReplaceToken(Constants.Tokens.ServiceTokenName, ServiceName)
+                .ReplaceToken(Constants.Tokens.ProjectTypeTokenName, serviceProjectType);
+            return serviceName;
+        }
+
+        private string GetTestRelativePath(IOptions<GeneralSection> options, string testProjectType)
+        {
+            string testRelativePath = $"{options.Value.Projects.UnitTest.Path}/{_options.Value.Projects.UnitTest.Template}"
+                .ReplaceToken(Constants.Tokens.CompanyTokenName, Company)
+                .ReplaceToken(Constants.Tokens.ServiceTokenName, ServiceName)
+                .ReplaceToken(Constants.Tokens.ProjectTypeTokenName, testProjectType);
             return testRelativePath;
         }
 
-        private async Task<bool> HandleProjectCreation(IOptions<GeneralOptions> options)
+        private string GetTestName(IOptions<GeneralSection> options, string testProjectType)
+        {
+            string testName = options.Value.Projects.UnitTest.Template
+                .ReplaceToken(Constants.Tokens.CompanyTokenName, Company)
+                .ReplaceToken(Constants.Tokens.ServiceTokenName, ServiceName)
+                .ReplaceToken(Constants.Tokens.ProjectTypeTokenName, testProjectType);
+            return testName;
+        }
+
+        private async Task<bool> HandleProjectCreation(IOptions<GeneralSection> options)
         {
             var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
             string framework = Framework ?? options.Value.Framework.Default;
 
-            string domainRelativePath = GetServiceRelativePath(options, DomainProjectName);
-            string infraRelativePath = GetServiceRelativePath(options, InfraProjectName);
-            string webapiRelativePath = GetServiceRelativePath(options, WebapiProjectName);
-            string testRelativePath = GetTestRelativePath(options, TestProjectName);
+            string domainRelativePath = GetServiceRelativePath(_options, Constants.ProjectTypes.Domain);
+            string domainProjectName = GetServiceName(_options, Constants.ProjectTypes.Domain);
+
+            string infraRelativePath = GetServiceRelativePath(_options, Constants.ProjectTypes.Infrastructure);
+            string infraProjectName = GetServiceName(_options, Constants.ProjectTypes.Infrastructure);
+
+            string webapiRelativePath = GetServiceRelativePath(_options, Constants.ProjectTypes.Api);
+            string webapiProjectName = GetServiceName(_options, Constants.ProjectTypes.Api);
+
+            string testRelativePath = GetTestRelativePath(_options, Constants.ProjectTypes.UnitTest);
+            string testProjectName = GetTestName(_options, Constants.ProjectTypes.UnitTest);
 
             // dotnet new classlib --name \"{domainProjectName}\" --output \"{domainRelativePath}\" --framework {framework}
             var domainCommand = CliWrap.Cli.Wrap("dotnet")
@@ -70,7 +96,7 @@ namespace Silent.Tool.Hexagonal.Cli
                     .Add("new")
                     .Add("classlib")
                     .Add("--name")
-                    .Add(DomainProjectName)
+                    .Add(domainProjectName)
                     .Add("--output")
                     .Add(domainRelativePath)
                     .Add("--framework")
@@ -83,7 +109,7 @@ namespace Silent.Tool.Hexagonal.Cli
                     .Add("new")
                     .Add("classlib")
                     .Add("--name")
-                    .Add(InfraProjectName)
+                    .Add(infraProjectName)
                     .Add("--output")
                     .Add(infraRelativePath)
                     .Add("--framework")
@@ -96,7 +122,7 @@ namespace Silent.Tool.Hexagonal.Cli
                     .Add("new")
                     .Add("webapi")
                     .Add("--name")
-                    .Add(WebapiProjectName)
+                    .Add(webapiProjectName)
                     .Add("--output")
                     .Add(webapiRelativePath)
                     .Add("--framework")
@@ -109,7 +135,7 @@ namespace Silent.Tool.Hexagonal.Cli
                     .Add("new")
                     .Add("xunit")
                     .Add("--name")
-                    .Add(TestProjectName)
+                    .Add(testProjectName)
                     .Add("--output")
                     .Add(testRelativePath)
                     .Add("--framework")
@@ -131,13 +157,14 @@ namespace Silent.Tool.Hexagonal.Cli
             return results.All(r => r.ExitCode == 0);
         }
 
-        private async Task<bool> HandleProjectReferences(IOptions<GeneralOptions> options)
+        private async Task<bool> HandleProjectReferences(IOptions<GeneralSection> options)
         {
             var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
-            string domainRelativePath = GetServiceRelativePath(options, DomainProjectName);
-            string infraRelativePath = GetServiceRelativePath(options, InfraProjectName);
-            string webapiRelativePath = GetServiceRelativePath(options, WebapiProjectName);
-            string testRelativePath = GetTestRelativePath(options, TestProjectName);
+
+            string domainRelativePath = GetServiceRelativePath(_options, Constants.ProjectTypes.Domain);
+            string infraRelativePath = GetServiceRelativePath(_options, Constants.ProjectTypes.Infrastructure);
+            string webapiRelativePath = GetServiceRelativePath(_options, Constants.ProjectTypes.Api);
+            string testRelativePath = GetTestRelativePath(_options, Constants.ProjectTypes.UnitTest);
 
             // dotnet add {infraRelativePath} reference {domainRelativePath}
             var infraReferencesCommand = CliWrap.Cli.Wrap("dotnet")
@@ -181,24 +208,32 @@ namespace Silent.Tool.Hexagonal.Cli
             return results.All(r => r.ExitCode == 0);
         }
 
-        private async Task<bool> HandleSolutionReferences(IOptions<GeneralOptions> options)
+        private async Task<bool> HandleSolutionReferences(IOptions<GeneralSection> options)
         {
             if (Directory.GetFiles("./", "*.sln").Any())
             {
                 var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
-                string domainRelativePath = GetServiceRelativePath(options, DomainProjectName);
-                string infraRelativePath = GetServiceRelativePath(options, InfraProjectName);
-                string webapiRelativePath = GetServiceRelativePath(options, WebapiProjectName);
-                string testRelativePath = GetTestRelativePath(options, TestProjectName);
+
+                string domainRelativePath = GetServiceRelativePath(_options, Constants.ProjectTypes.Domain);
+                string domainProjectName = GetServiceName(_options, Constants.ProjectTypes.Domain);
+
+                string infraRelativePath = GetServiceRelativePath(_options, Constants.ProjectTypes.Infrastructure);
+                string infraProjectName = GetServiceName(_options, Constants.ProjectTypes.Infrastructure);
+
+                string webapiRelativePath = GetServiceRelativePath(_options, Constants.ProjectTypes.Api);
+                string webapiProjectName = GetServiceName(_options, Constants.ProjectTypes.Api);
+
+                string testRelativePath = GetTestRelativePath(_options, Constants.ProjectTypes.UnitTest);
+                string testProjectName = GetTestName(_options, Constants.ProjectTypes.UnitTest);
 
                 var solutionServiceReferencesCommand = CliWrap.Cli.Wrap("dotnet")
                     .WithStandardOutputPipe(consoleOutputTarget)
                     .WithArguments(args => args
                         .Add("sln")
                         .Add("add")
-                        .Add($"{domainRelativePath}/{DomainProjectName}.csproj")
-                        .Add($"{infraRelativePath}/{InfraProjectName}.csproj")
-                        .Add($"{webapiRelativePath}/{WebapiProjectName}.csproj")
+                        .Add($"{domainRelativePath}/{domainProjectName}.csproj")
+                        .Add($"{infraRelativePath}/{infraProjectName}.csproj")
+                        .Add($"{webapiRelativePath}/{webapiProjectName}.csproj")
                         .Add("--solution-folder")
                         .Add($"src\\{options.Value.Folders.ServicesFolder}\\{ServiceName}"));
 
@@ -207,7 +242,7 @@ namespace Silent.Tool.Hexagonal.Cli
                     .WithArguments(args => args
                         .Add("sln")
                         .Add("add")
-                        .Add($"{testRelativePath}/{TestProjectName}.csproj")
+                        .Add($"{testRelativePath}/{testProjectName}.csproj")
                         .Add("--solution-folder")
                         .Add("test"));
 
