@@ -17,10 +17,10 @@ namespace Silent.Tool.Hexagonal.Cli.Commands
     public class ConfigSetCommand : ICommand
     {
         private readonly IConfiguration _configuration;
-        private readonly IOptions<GeneralOptions> _options;
+        private readonly IOptions<GeneralSection> _options;
         private readonly JsonSerializerSettings _jsonSettings;
 
-        public ConfigSetCommand(IOptions<GeneralOptions> options, IConfiguration configuration)
+        public ConfigSetCommand(IOptions<GeneralSection> options, IConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             _options = options ?? throw new ArgumentNullException(nameof(options));
@@ -44,12 +44,11 @@ namespace Silent.Tool.Hexagonal.Cli.Commands
             try
             {
                 var executingAssemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                var generalOptions = new GeneralOptions();
+                var generalSection = new GeneralSection();
                 _configuration[Key] = Value;
-                _configuration.GetSection(GeneralOptions.Name).Bind(generalOptions);
+                _configuration.Bind(generalSection);
 
-                var settings = new { General = generalOptions };
-                var json = JsonConvert.SerializeObject(settings, _jsonSettings);
+                var json = JsonConvert.SerializeObject(generalSection, _jsonSettings);
                 File.WriteAllText(Path.Combine(executingAssemblyPath, "appsettings.json"), json);
                 console.Output.WriteLine($"The setting '{Key}' was updated to a value '{Value}' successfully.");
             }
