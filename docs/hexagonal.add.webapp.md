@@ -9,13 +9,14 @@
 ```bash
 hexa add webapp <WEBAPP_NAME>
     [-f|--framework <FRAMEWORK>]
+    [-c|--company <COMPANY_NAME>]
 
 hexa add webapp [-h|--help]
 ```
 
 ## Description
 
-Creates the following folder structure:
+Creates the following folder structure by default:
 
 ```
 `---+ <PROJECT_NAME>
@@ -25,6 +26,8 @@ Creates the following folder structure:
                 |--+ <WEBAPP_NAME>.Web
                 `--+ <WEBAPP_NAME>.Infrastructure
 ```
+
+If you want to change the folder structure, you can do so by changing the project path and name templates in default configuration file.
 
 ## Arguments
 
@@ -40,9 +43,9 @@ Creates the following folder structure:
 ## Examples
 
 ```bash
-hexa add webapp "WEBAPP_NAME"
+hexa add webapp "Firefox"
 
-hexa add webapp "WEBAPP_NAME" --framework "net5.0"
+hexa add webapp "Firefox" --framework "net5.0" --company "Mozilla"
 
 hexa add webapp --help
 ```

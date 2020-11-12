@@ -8,6 +8,7 @@
 
 ```bash
 hexa init <PROJECT_NAME>
+    [-c|--company <COMPANY_NAME>]
 ```
 
 ## Description
@@ -21,7 +22,8 @@ Creates the following folder structure:
     |---+ samples
     |---+ src
     |---+ test
-    `---- <PROJECT_NAME>.sln
+    |---- <PROJECT_NAME>.sln
+    `---- .hexaconfig
 ```
 
 ## Arguments
@@ -31,5 +33,5 @@ Creates the following folder structure:
 ## Examples
 
 ```bash
-hexa init "PROJECT_NAME"
+hexa init "Firefox" --company "Mozilla"
 ```

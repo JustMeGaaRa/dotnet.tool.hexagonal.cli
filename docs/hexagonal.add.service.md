@@ -9,13 +9,14 @@
 ```bash
 hexa add service <SERVICE_NAME>
     [-f|--framework <FRAMEWORK>]
+    [-c|--company <COMPANY_NAME>]
 
 hexa add service [-h|--help]
 ```
 
 ## Description
 
-Creates the following folder structure:
+Creates the following folder structure by default:
 
 ```
 `---+ <PROJECT_NAME>
@@ -33,6 +34,8 @@ Creates the following folder structure:
         `---+ <SERVICE_NAME>.Domain.Tests
 ```
 
+If you want to change the folder structure, you can do so by changing the project path and name templates in default configuration file.
+
 ## Arguments
 
 - `SERVICE_NAME`
@@ -47,9 +50,9 @@ Creates the following folder structure:
 ## Examples
 
 ```bash
-hexa add service "SERVICE_NAME"
+hexa add service "Firefox"
 
-hexa add service "SERVICE_NAME" --framework "net5.0"
+hexa add service "Firefox" --framework "net5.0" --company "Mozilla"
 
 hexa add service --help
 ```

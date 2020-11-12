@@ -24,8 +24,8 @@
             public const string Domain = "Domain";
             public const string Infrastructure = "Infrastructure";
             public const string Web = "Web";
-            public const string UnitTest = "Test";
-            public const string IntegrationTest = "IntegrationTest";
+            public const string UnitTest = "Tests";
+            public const string IntegrationTest = "IntegrationTests";
             public const string Client = "Client";
         }
 
