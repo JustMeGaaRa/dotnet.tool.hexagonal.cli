@@ -25,6 +25,9 @@ namespace Silent.Tool.Hexagonal.Cli
         [CommandParameter(0)]
         public string ProjectName { get; set; }
 
+        [CommandOption("--company", 'c')]
+        public string Company { get; set; }
+
         public async ValueTask ExecuteAsync(IConsole console)
         {
             await HandleIniCommand(_options);
