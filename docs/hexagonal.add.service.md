@@ -38,7 +38,7 @@ If you want to change the folder structure, you can do so by changing the projec
 
 ## Arguments
 
-- `SERVICE_NAME`
+- `SERVICE_NAME` - A name for the service project.
 
 ## Options
 
@@ -52,7 +52,7 @@ If you want to change the folder structure, you can do so by changing the projec
 ```bash
 hexa add service "Firefox"
 
-hexa add service "Firefox" --framework "net5.0" --company "Mozilla"
+hexa add service "Firefox" --company "Mozilla" --framework "net5.0"
 
 hexa add service --help
 ```

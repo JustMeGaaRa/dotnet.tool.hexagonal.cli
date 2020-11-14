@@ -3,6 +3,7 @@ using CliFx.Attributes;
 using CliWrap;
 using Microsoft.Extensions.Options;
 using Silent.Tool.Hexagonal.Cli.Infrastructure.Options;
+using Silent.Tool.Hexagonal.Cli.Models;
 using System;
 using System.IO;
 using System.Linq;
@@ -14,17 +15,19 @@ namespace Silent.Tool.Hexagonal.Cli
     public class AddWebAppCommand : ICommand
     {
         private readonly IOptions<GeneralSection> _options;
+        private readonly CommandResult _defaultCommandResult;
 
         public AddWebAppCommand(IOptions<GeneralSection> options)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
+            _defaultCommandResult = new CommandResult(0, DateTime.UtcNow, DateTime.UtcNow);
         }
 
         [CommandParameter(0)]
         public string WebAppName { get; set; }
 
         [CommandOption("--company", 'c')]
-        public string Company { get; set; }
+        public string CompanyName { get; set; }
 
         [CommandOption("--framework", 'f')]
         public string Framework { get; set; }
@@ -36,22 +39,19 @@ namespace Silent.Tool.Hexagonal.Cli
             await HandleSolutionReferences(_options);
         }
 
-        private string GetServiceRelativePath(IOptions<GeneralSection> options, string serviceProjectType)
+        private Template ResolveAllTokens(string format, string projectType)
         {
-            string serviceRelativePath = $"{options.Value.Projects.WebApp.Path}/{_options.Value.Projects.WebApp.Template}"
-                .ReplaceToken(Constants.Tokens.CompanyTokenName, Company)
-                .ReplaceToken(Constants.Tokens.ServiceTokenName, WebAppName)
-                .ReplaceToken(Constants.Tokens.ProjectTypeTokenName, serviceProjectType);
-            return serviceRelativePath;
+            var resolvedTemplate = Template
+                .FromFormat(format)
+                .ResolveToken(TokenTypes.Company, CompanyName)
+                .ResolveToken(TokenTypes.WebApp, WebAppName)
+                .ResolveToken(TokenTypes.ProjectType, projectType);
+            return resolvedTemplate;
         }
 
-        private string GetServiceName(IOptions<GeneralSection> options, string serviceProjectType)
+        private string GetServiceRelativePath(IOptions<GeneralSection> options)
         {
-            string serviceName = options.Value.Projects.Service.Template
-                .ReplaceToken(Constants.Tokens.CompanyTokenName, Company)
-                .ReplaceToken(Constants.Tokens.ServiceTokenName, WebAppName)
-                .ReplaceToken(Constants.Tokens.ProjectTypeTokenName, serviceProjectType);
-            return serviceName;
+            return $"{options.Value.Projects.WebApp.Path}\\{options.Value.Projects.WebApp.Template}";
         }
 
         private async Task<bool> HandleProjectCreation(IOptions<GeneralSection> options)
@@ -59,23 +59,25 @@ namespace Silent.Tool.Hexagonal.Cli
             var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
             string framework = Framework ?? options.Value.Framework.Default;
 
-            string webappRelativePath = GetServiceRelativePath(options, Constants.ProjectTypes.Web);
-            string webAppProjectName = GetServiceName(options, Constants.ProjectTypes.Web);
+            var webAppRelativePath = ResolveAllTokens(GetServiceRelativePath(options), ProjectTypes.Web);
+            var webAppProjectName = ResolveAllTokens(options.Value.Projects.WebApp.Template, ProjectTypes.Web);
 
-            // dotnet new webapp --name \"{WebAppProjectName}\" --output \"{webappRelativePath}\" --framework {framework}
+            // dotnet new webapp --name {WebAppProjectName} --output {webappRelativePath} --framework {framework}
             var webappCommand = CliWrap.Cli.Wrap("dotnet")
                 .WithStandardOutputPipe(consoleOutputTarget)
                 .WithArguments(args => args
                     .Add("new")
                     .Add("webapp")
                     .Add("--name")
-                    .Add(webAppProjectName)
+                    .Add(webAppProjectName.Value)
                     .Add("--output")
-                    .Add(webappRelativePath)
+                    .Add(webAppRelativePath.Value)
                     .Add("--framework")
                     .Add(framework));
 
-            var webappResult = await webappCommand.ExecuteAsync();
+            var webappResult = options.Value.Projects.WebApp.Generate
+                ? await webappCommand.ExecuteAsync()
+                : _defaultCommandResult;
 
             var results = new[]
             {
@@ -96,19 +98,22 @@ namespace Silent.Tool.Hexagonal.Cli
             {
                 var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
 
-                string webappRelativePath = GetServiceRelativePath(options, Constants.ProjectTypes.Web);
-                string webAppProjectName = GetServiceName(options, Constants.ProjectTypes.Web);
+                var webAppOutputPath = ResolveAllTokens(options.Value.Projects.WebApp.Path, ProjectTypes.Web);
+                var webAppRelativePath = ResolveAllTokens(GetServiceRelativePath(options), ProjectTypes.Web);
+                var webAppProjectName = ResolveAllTokens(options.Value.Projects.WebApp.Template, ProjectTypes.Web);
 
                 var solutionServiceReferencesCommand = CliWrap.Cli.Wrap("dotnet")
                     .WithStandardOutputPipe(consoleOutputTarget)
                     .WithArguments(args => args
                         .Add("sln")
                         .Add("add")
-                        .Add($"{webappRelativePath}/{webAppProjectName}.csproj")
+                        .Add($"{webAppRelativePath.Value}\\{webAppProjectName.Value}.csproj")
                         .Add("--solution-folder")
-                        .Add("src"));
+                        .Add(webAppOutputPath.Value));
 
-                var solutionServiceReferencesResult = await solutionServiceReferencesCommand.ExecuteAsync();
+                var solutionServiceReferencesResult = options.Value.Projects.WebApp.Generate
+                    ? await solutionServiceReferencesCommand.ExecuteAsync()
+                    : _defaultCommandResult;
 
                 var results = new[]
                 {
