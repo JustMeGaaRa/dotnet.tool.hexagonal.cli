@@ -1,7 +1,6 @@
 ﻿using CliFx;
 using CliFx.Attributes;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Silent.Tool.Hexagonal.Cli.Infrastructure.Options;
@@ -17,19 +16,20 @@ namespace Silent.Tool.Hexagonal.Cli.Commands
     public class ConfigSetCommand : ICommand
     {
         private readonly IConfiguration _configuration;
-        private readonly IOptions<GeneralSection> _options;
         private readonly JsonSerializerSettings _jsonSettings;
 
-        public ConfigSetCommand(IOptions<GeneralSection> options, IConfiguration configuration)
+        public ConfigSetCommand(IConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            _options = options ?? throw new ArgumentNullException(nameof(options));
             _jsonSettings = new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented,
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             };
         }
+
+        [CommandOption("--global", 'g')]
+        public bool Global { get; set; }
 
         [CommandOption("--key", 'k', IsRequired = true)]
         public string Key { get; set; }
@@ -44,12 +44,16 @@ namespace Silent.Tool.Hexagonal.Cli.Commands
             try
             {
                 var executingAssemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                var filePath = Global
+                    ? Path.Combine(executingAssemblyPath, Constants.GlobalFileName)
+                    : Path.Combine(Directory.GetCurrentDirectory(), Constants.ConfigFileName);
+
                 var generalSection = new GeneralSection();
                 _configuration[Key] = Value;
                 _configuration.Bind(generalSection);
 
                 var json = JsonConvert.SerializeObject(generalSection, _jsonSettings);
-                File.WriteAllText(Path.Combine(executingAssemblyPath, "appsettings.json"), json);
+                File.WriteAllText(filePath, json);
                 console.Output.WriteLine($"The setting '{Key}' was updated to a value '{Value}' successfully.");
             }
             catch (PathTooLongException ex)

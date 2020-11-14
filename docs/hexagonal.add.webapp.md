@@ -31,7 +31,7 @@ If you want to change the folder structure, you can do so by changing the projec
 
 ## Arguments
 
-- `WEBAPP_NAME`
+- `WEBAPP_NAME` - A name for the web application project.
 
 ## Options
 
@@ -45,7 +45,7 @@ If you want to change the folder structure, you can do so by changing the projec
 ```bash
 hexa add webapp "Firefox"
 
-hexa add webapp "Firefox" --framework "net5.0" --company "Mozilla"
+hexa add webapp "Firefox" --company "Mozilla" --framework "net5.0"
 
 hexa add webapp --help
 ```

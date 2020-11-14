@@ -25,9 +25,6 @@ namespace Silent.Tool.Hexagonal.Cli
         [CommandParameter(0)]
         public string ProjectName { get; set; }
 
-        [CommandOption("--company", 'c')]
-        public string Company { get; set; }
-
         public async ValueTask ExecuteAsync(IConsole console)
         {
             await HandleIniCommand(_options);
@@ -37,15 +34,13 @@ namespace Silent.Tool.Hexagonal.Cli
         {
             var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
 
-            // dotnet new sln --name \"{ProjectName}\" --output \"{ProjectName}\"
+            // dotnet new sln --name {ProjectName} --output {ProjectName}
             var domainCommand = CliWrap.Cli.Wrap("dotnet")
                 .WithStandardOutputPipe(consoleOutputTarget)
                 .WithArguments(args => args
                     .Add("new")
                     .Add("sln")
                     .Add("--name")
-                    .Add(ProjectName)
-                    .Add("--output")
                     .Add(ProjectName));
 
             var domainCommandResult = await domainCommand.ExecuteAsync();
@@ -53,29 +48,14 @@ namespace Silent.Tool.Hexagonal.Cli
             return CopyDefaultConfig();
         }
 
-        private bool CreateDefaultFolders(IOptions<GeneralSection> options)
-        {
-            var folders = new[]
-                        {
-                $"{ProjectName}/{options.Value.Folders.ClientsFolder}",
-                $"{ProjectName}/{options.Value.Folders.DocsFolder}",
-                $"{ProjectName}/{options.Value.Folders.SamplesFolder}",
-                $"{ProjectName}/src/{options.Value.Folders.ServicesFolder}",
-                $"{ProjectName}/src/{options.Value.Folders.WebAppsFolder}",
-                $"{ProjectName}/test"
-            };
-
-            return folders.Aggregate(true, (successful, folder) => successful && folder.CreateDirectorySafely());
-        }
-
         private static bool CopyDefaultConfig()
         {
             try
             {
                 var executingAssemblyPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                var defaultConfigPath = Path.Combine(executingAssemblyPath, Constants.ConfigFileName);
+                var defaultConfigPath = Path.Combine(executingAssemblyPath, Constants.GlobalFileName);
                 var defaultConfigJson = File.ReadAllText(defaultConfigPath);
-                var currentDirectoryPath = "";
+                var currentDirectoryPath = Directory.GetCurrentDirectory();
                 var currentDirectoryConfigPath = Path.Combine(currentDirectoryPath, Constants.ConfigFileName);
                 File.WriteAllText(currentDirectoryConfigPath, defaultConfigJson);
                 Console.WriteLine($"The default config with name '{Constants.ConfigFileName}' was copied to current directory.");

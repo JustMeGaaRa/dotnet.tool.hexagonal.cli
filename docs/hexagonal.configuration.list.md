@@ -8,6 +8,7 @@
 
 ```bash
 hexa config list
+    [-g|--global]
 ```
 
 ## Description
@@ -28,11 +29,6 @@ The command lists down all the options that can be modified, so that you know wh
 [ projects:client:path, clients/{SERVICE_NAME} ]
 [ projects:client:generate, True ]
 [ framework:default, net5.0 ]
-[ folders:webappsFolder, webapps ]
-[ folders:servicesFolder, services ]
-[ folders:samplesFolder, samples ]
-[ folders:docsFolder, docs ]
-[ folders:clientsFolder, clients ]
 ```
 
 ### Existing Tokens
@@ -41,6 +37,12 @@ The command lists down all the options that can be modified, so that you know wh
 - `{SERVICE_NAME}` - A service name that will be passed as a command parameter.
 - `{WEBAPP_NAME}` - A web app name that will be passed as a command parameter.
 - `{PROJECT_TYPE}` - A project type that will be substituted automatically depending on the project that is generated. Supported types: Domain, Infrastructure, Api, Web, Tests, IntegrationTests, Client.
+
+## Options
+
+| Name      | Options   | Required  | Description                           |
+|---        |---        |---        |---                                    |
+| `--global`| boolean   | false     | Use global settings or local. Local by default            |
 
 ## Examples
 
