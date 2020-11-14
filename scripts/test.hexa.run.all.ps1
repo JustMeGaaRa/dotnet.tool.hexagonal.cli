@@ -1,0 +1,5 @@
+powershell.exe -File "test.hexa.init.ps1"
+powershell.exe -File "test.hexa.add.service.ps1"
+powershell.exe -File "test.hexa.add.webapp.ps1"
+powershell.exe -File "test.hexa.config.list.ps1"
+powershell.exe -File "test.hexa.config.set.ps1"
