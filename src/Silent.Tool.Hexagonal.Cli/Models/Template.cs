@@ -43,7 +43,8 @@ namespace Silent.Tool.Hexagonal.Cli.Models
 
         public Template ResolveToken(Token token, string value)
         {
-            var updatedValue = Value.Replace(token.Name, value);
+            var valueIsValid = !string.IsNullOrWhiteSpace(value);
+            var updatedValue = valueIsValid ? Value.Replace(token.Name, value) : Value;
             var unresolvedTokens = TokenTypes.All
                 .Where(x => updatedValue.Contains(x.Name))
                 .ToArray();
