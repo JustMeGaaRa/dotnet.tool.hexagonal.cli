@@ -49,18 +49,34 @@ namespace Silent.Tool.Hexagonal.Cli
             return resolvedTemplate;
         }
 
-        private string GetServiceRelativePath(IOptions<GeneralSection> options)
+        private string GetOutputPath(string relativePath, string projectName)
         {
-            return $"{options.Value.Projects.WebApp.Path}\\{options.Value.Projects.WebApp.Template}";
+            return $"{relativePath}\\{projectName}";
+        }
+
+        private string GetProjectPath(string relativePath, string projectName)
+        {
+            return $"{relativePath}\\{projectName}\\{projectName}.csproj";
+        }
+
+        private void PrintUnresolvedTokensError(Template template)
+        {
+            if (!template.IsResolved)
+            {
+                Console.WriteLine($"The following template was not fully resolved: '{template.Value}'. Please, resolve the following tokens:");
+                template.UnresolvedTokens.ToList().ForEach(x => Console.WriteLine($"\t- {x.Name}"));
+            }
         }
 
         private async Task<bool> HandleProjectCreation(IOptions<GeneralSection> options)
         {
             var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
             string framework = Framework ?? options.Value.Framework.Default;
+            var projectOptions = options.Value.Projects;
 
-            var webAppRelativePath = ResolveAllTokens(GetServiceRelativePath(options), ProjectTypes.Web);
-            var webAppProjectName = ResolveAllTokens(options.Value.Projects.WebApp.Template, ProjectTypes.Web);
+            var webAppOutputPath = GetOutputPath(projectOptions.WebApp.Path, projectOptions.WebApp.Template);
+            var webAppRelativePath = ResolveAllTokens(webAppOutputPath, ProjectTypes.Web);
+            var webAppProjectName = ResolveAllTokens(projectOptions.WebApp.Template, ProjectTypes.Web);
 
             // dotnet new webapp --name {WebAppProjectName} --output {webappRelativePath} --framework {framework}
             var webappCommand = CliWrap.Cli.Wrap("dotnet")
@@ -75,7 +91,11 @@ namespace Silent.Tool.Hexagonal.Cli
                     .Add("--framework")
                     .Add(framework));
 
-            var webappResult = options.Value.Projects.WebApp.Generate
+            PrintUnresolvedTokensError(webAppRelativePath);
+
+            var webappResult = projectOptions.WebApp.Generate
+                && webAppProjectName.IsResolved
+                && webAppRelativePath.IsResolved
                 ? await webappCommand.ExecuteAsync()
                 : _defaultCommandResult;
 
@@ -97,17 +117,18 @@ namespace Silent.Tool.Hexagonal.Cli
             if (Directory.GetFiles("./", "*.sln").Any())
             {
                 var consoleOutputTarget = PipeTarget.ToStream(Console.OpenStandardOutput());
+                var projectOptions = options.Value.Projects;
 
-                var webAppOutputPath = ResolveAllTokens(options.Value.Projects.WebApp.Path, ProjectTypes.Web);
-                var webAppRelativePath = ResolveAllTokens(GetServiceRelativePath(options), ProjectTypes.Web);
-                var webAppProjectName = ResolveAllTokens(options.Value.Projects.WebApp.Template, ProjectTypes.Web);
+                var webAppOutputPath = ResolveAllTokens(projectOptions.WebApp.Path, ProjectTypes.Web);
+                var webAppProjectPath = GetProjectPath(projectOptions.WebApp.Path, projectOptions.WebApp.Template);
+                var webAppRelativePath = ResolveAllTokens(webAppProjectPath, ProjectTypes.Web);
 
                 var solutionServiceReferencesCommand = CliWrap.Cli.Wrap("dotnet")
                     .WithStandardOutputPipe(consoleOutputTarget)
                     .WithArguments(args => args
                         .Add("sln")
                         .Add("add")
-                        .Add($"{webAppRelativePath.Value}\\{webAppProjectName.Value}.csproj")
+                        .Add(webAppRelativePath.Value)
                         .Add("--solution-folder")
                         .Add(webAppOutputPath.Value));
 

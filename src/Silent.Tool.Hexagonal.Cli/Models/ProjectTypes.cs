@@ -2,6 +2,7 @@
 {
     public static class ProjectTypes
     {
+        public const string Service = "Service";
         public const string Api = "Api";
         public const string Domain = "Domain";
         public const string Infrastructure = "Infrastructure";
